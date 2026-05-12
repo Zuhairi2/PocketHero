@@ -1,0 +1,451 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class GamificationScreen extends StatelessWidget {
+  const GamificationScreen({Key? key}) : super(key: key);
+
+  static const _accent = Color(0xFF4F46E5);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text(
+          'Rewards & progress',
+          style: TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF111827)),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildRankCard(),
+            const SizedBox(height: 28),
+            _buildSectionTitle('Achievements', 'Earn badges by hitting goals and building habits.'),
+            const SizedBox(height: 14),
+            _buildAchievementGrid(context),
+            const SizedBox(height: 28),
+            _buildSectionTitle('Coupons & vouchers', 'Rewards for streaks, milestones, and tasks.'),
+            const SizedBox(height: 14),
+            _buildVoucherCard(
+              context,
+              title: 'RM10 grocery voucher',
+              subtitle: '7-day logging streak',
+              code: 'PH-STREAK-7',
+              expires: 'Expires in 14 days',
+              icon: Icons.local_offer_rounded,
+              iconColor: const Color(0xFF10B981),
+              iconBg: const Color(0xFFECFDF5),
+            ),
+            const SizedBox(height: 12),
+            _buildVoucherCard(
+              context,
+              title: '5% cashback boost',
+              subtitle: 'Reached monthly savings goal',
+              code: 'PH-GOAL-MAY',
+              expires: 'Redeem by 31 May',
+              icon: Icons.percent_rounded,
+              iconColor: const Color(0xFF7C3AED),
+              iconBg: const Color(0xFFF5F3FF),
+            ),
+            const SizedBox(height: 12),
+            _buildVoucherCard(
+              context,
+              title: 'Free premium trial',
+              subtitle: 'Unlocked Gold rank',
+              code: 'PH-RANK-GOLD',
+              expires: 'One-time use',
+              icon: Icons.star_rounded,
+              iconColor: const Color(0xFFF59E0B),
+              iconBg: const Color(0xFFFFFBEB),
+              locked: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111827),
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRankCard() {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4F46E5).withOpacity(0.35),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.military_tech_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Your rank',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Silver saver',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Progress to Gold',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: 0.62,
+              minHeight: 8,
+              backgroundColor: Colors.white.withOpacity(0.25),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Higher ranks reflect consistent usage, participation, and hitting your targets.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementGrid(BuildContext context) {
+    const items = <_Achievement>[
+      _Achievement(
+        title: 'First budget',
+        subtitle: 'Set a monthly limit',
+        icon: Icons.flag_rounded,
+        unlocked: true,
+      ),
+      _Achievement(
+        title: 'Streak starter',
+        subtitle: 'Log 3 days in a row',
+        icon: Icons.local_fire_department_rounded,
+        unlocked: true,
+      ),
+      _Achievement(
+        title: 'Goal crusher',
+        subtitle: 'Complete a savings goal',
+        icon: Icons.emoji_events_rounded,
+        unlocked: false,
+      ),
+      _Achievement(
+        title: 'Balanced month',
+        subtitle: 'Stay under budget 4 weeks',
+        icon: Icons.balance_rounded,
+        unlocked: false,
+      ),
+    ];
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        for (final a in items) _buildAchievementTile(context, a),
+      ],
+    );
+  }
+
+  Widget _buildAchievementTile(BuildContext context, _Achievement a) {
+    final Color fg = a.unlocked ? _accent : const Color(0xFF94A3B8);
+    final Color bg = a.unlocked ? const Color(0xFFEEF2FF) : const Color(0xFFF1F5F9);
+
+    return Container(
+      width: (MediaQuery.sizeOf(context).width - 24 * 2 - 12) / 2,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              a.icon,
+              color: fg,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            a.title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: a.unlocked ? const Color(0xFF111827) : const Color(0xFF94A3B8),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            a.subtitle,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: a.unlocked ? const Color(0xFF6B7280) : const Color(0xFFCBD5E1),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                a.unlocked ? Icons.check_circle_rounded : Icons.lock_outline_rounded,
+                size: 16,
+                color: a.unlocked ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                a.unlocked ? 'Unlocked' : 'Locked',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: a.unlocked ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoucherCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String code,
+    required String expires,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    bool locked = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: iconColor, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: locked ? const Color(0xFF94A3B8) : const Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          locked ? '••••••••••' : code,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: locked ? const Color(0xFFCBD5E1) : const Color(0xFF0F172A),
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                      if (!locked)
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: code));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Code copied to clipboard'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Copy',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: _accent,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  expires,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Achievement {
+  const _Achievement({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.unlocked,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool unlocked;
+}

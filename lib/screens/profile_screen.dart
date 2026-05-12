@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'account_settings_screen.dart';
+import 'help_support_screen.dart';
+import 'login_screen.dart';
 import 'payment_methods_screen.dart';
 import 'security_privacy_screen.dart';
-import 'help_support_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -147,7 +148,12 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFEF2F2),
                   foregroundColor: const Color(0xFFF43F5E),
