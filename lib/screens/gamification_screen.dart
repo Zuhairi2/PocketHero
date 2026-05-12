@@ -29,7 +29,7 @@ class GamificationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildRankCard(),
+            _buildRankCard(context),
             const SizedBox(height: 28),
             _buildSectionTitle('Achievements', 'Earn badges by hitting goals and building habits.'),
             const SizedBox(height: 14),
@@ -57,6 +57,39 @@ class GamificationScreen extends StatelessWidget {
               icon: Icons.percent_rounded,
               iconColor: const Color(0xFF7C3AED),
               iconBg: const Color(0xFFF5F3FF),
+            ),
+            const SizedBox(height: 12),
+            _buildVoucherCard(
+              context,
+              title: 'Buy 1 Free 1 ZUS Coffee',
+              subtitle: 'Weekend Special',
+              code: 'PH-ZUS-B1F1',
+              expires: 'Valid this weekend',
+              icon: Icons.coffee_rounded,
+              iconColor: const Color(0xFF024C8C), // ZUS Blue
+              iconBg: const Color(0xFFE0F0FF),
+            ),
+            const SizedBox(height: 12),
+            _buildVoucherCard(
+              context,
+              title: '20% Off McD Delivery',
+              subtitle: 'Min. spend RM30',
+              code: 'PH-MCD-20',
+              expires: 'Expires in 7 days',
+              icon: Icons.fastfood_rounded,
+              iconColor: const Color(0xFFDA291C), // McD Red
+              iconBg: const Color(0xFFFFEBEB),
+            ),
+            const SizedBox(height: 12),
+            _buildVoucherCard(
+              context,
+              title: 'RM5 GrabRide Voucher',
+              subtitle: 'Redeemed with 500 points',
+              code: 'PH-GRAB-RM5',
+              expires: 'Expires in 30 days',
+              icon: Icons.local_taxi_rounded,
+              iconColor: const Color(0xFF00B14F), // Grab Green
+              iconBg: const Color(0xFFE5F8ED),
             ),
             const SizedBox(height: 12),
             _buildVoucherCard(
@@ -103,9 +136,11 @@ class GamificationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRankCard() {
-    return Container(
-      padding: const EdgeInsets.all(22),
+  Widget _buildRankCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showRanksBottomSheet(context),
+      child: Container(
+        padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
@@ -193,6 +228,229 @@ class GamificationScreen extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w500,
               height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Tap to view all ranks',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withOpacity(0.9),
+                size: 10,
+              ),
+            ],
+          ),
+           ],
+      ),
+    ),
+  );
+}
+
+  void _showRanksBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.sizeOf(context).height * 0.75,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Rank Journey',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Unlock perks and rewards as you climb!',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  children: [
+                    _buildRankListItem(
+                      title: 'Bronze Beginner',
+                      subtitle: 'Start your savings journey.',
+                      icon: Icons.star_border_rounded,
+                      color: const Color(0xFFCD7F32),
+                      isCurrent: false,
+                      isLocked: false,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRankListItem(
+                      title: 'Silver Saver',
+                      subtitle: 'Consistent saver. Access basic vouchers.',
+                      icon: Icons.star_half_rounded,
+                      color: const Color(0xFF94A3B8), // Silver
+                      isCurrent: true,
+                      isLocked: false,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRankListItem(
+                      title: 'Gold Guardian',
+                      subtitle: 'Hit 3 monthly goals. Unlock premium trials.',
+                      icon: Icons.star_rounded,
+                      color: const Color(0xFFF59E0B), // Gold
+                      isCurrent: false,
+                      isLocked: true,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRankListItem(
+                      title: 'Platinum Protector',
+                      subtitle: '6-month streak. Higher cashback tiers.',
+                      icon: Icons.diamond_outlined,
+                      color: const Color(0xFF0EA5E9), // Platinum/Blue
+                      isCurrent: false,
+                      isLocked: true,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRankListItem(
+                      title: 'Diamond Master',
+                      subtitle: '1-year streak. Exclusive partner discounts.',
+                      icon: Icons.diamond_rounded,
+                      color: const Color(0xFF8B5CF6), // Diamond/Purple
+                      isCurrent: false,
+                      isLocked: true,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRankListItem(
+                      title: 'Pocket Hero',
+                      subtitle: 'Financial guru. Supreme rewards!',
+                      icon: Icons.military_tech_rounded,
+                      color: const Color(0xFFEF4444), // Hero Red
+                      isCurrent: false,
+                      isLocked: true,
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRankListItem({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isCurrent,
+    required bool isLocked,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isCurrent ? color.withOpacity(0.1) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isCurrent ? color.withOpacity(0.3) : const Color(0xFFF1F5F9),
+          width: isCurrent ? 2 : 1,
+        ),
+        boxShadow: isCurrent ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isLocked ? const Color(0xFFF1F5F9) : color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              isLocked ? Icons.lock_outline_rounded : icon,
+              color: isLocked ? const Color(0xFF94A3B8) : color,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isLocked ? const Color(0xFF94A3B8) : const Color(0xFF111827),
+                      ),
+                    ),
+                    if (isCurrent) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Current',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ]
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isLocked ? const Color(0xFFCBD5E1) : const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

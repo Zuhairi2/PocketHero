@@ -368,97 +368,102 @@ class _StatsScreenState extends State<StatsScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
+                    Column(
                       children: [
-                        SizedBox(
-                          width: 140,
-                          height: 140,
-                          child: PieChart(
-                            PieChartData(
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 40,
-                              sections: [
-                                PieChartSectionData(
-                                  color: const Color(0xFF6366F1), // Food
-                                  value: 35,
-                                  title: '',
-                                  radius: 22,
-                                  badgeWidget: _buildCategoryBadge('🍕'),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(0xFF06B6D4), // Transport
-                                  value: 22,
-                                  title: '',
-                                  radius: 22,
-                                  badgeWidget: _buildCategoryBadge('🚗'),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(0xFF10B981), // Shopping
-                                  value: 18,
-                                  title: '',
-                                  radius: 22,
-                                  badgeWidget: _buildCategoryBadge('🛍️'),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(0xFFF43F5E), // Rent
-                                  value: 15,
-                                  title: '',
-                                  radius: 22,
-                                  badgeWidget: _buildCategoryBadge('🏠'),
-                                ),
-                                PieChartSectionData(
-                                  color: const Color(
-                                    0xFFF59E0B,
-                                  ), // Entertainment
-                                  value: 10,
-                                  title: '',
-                                  radius: 22,
-                                  badgeWidget: _buildCategoryBadge('🎬'),
-                                ),
-                              ],
+                        Center(
+                          child: SizedBox(
+                            width: 160,
+                            height: 160,
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 46,
+                                sections: [
+                                  PieChartSectionData(
+                                    color: const Color(0xFF6366F1), // Food
+                                    value: 35,
+                                    title: '',
+                                    radius: 22,
+                                    badgeWidget: _buildCategoryBadge('🍕'),
+                                  ),
+                                  PieChartSectionData(
+                                    color: const Color(0xFF06B6D4), // Transport
+                                    value: 22,
+                                    title: '',
+                                    radius: 22,
+                                    badgeWidget: _buildCategoryBadge('🚗'),
+                                  ),
+                                  PieChartSectionData(
+                                    color: const Color(0xFF10B981), // Shopping
+                                    value: 18,
+                                    title: '',
+                                    radius: 22,
+                                    badgeWidget: _buildCategoryBadge('🛍️'),
+                                  ),
+                                  PieChartSectionData(
+                                    color: const Color(0xFFF43F5E), // Rent
+                                    value: 15,
+                                    title: '',
+                                    radius: 22,
+                                    badgeWidget: _buildCategoryBadge('🏠'),
+                                  ),
+                                  PieChartSectionData(
+                                    color: const Color(
+                                      0xFFF59E0B,
+                                    ), // Entertainment
+                                    value: 10,
+                                    title: '',
+                                    radius: 22,
+                                    badgeWidget: _buildCategoryBadge('🎬'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 24),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              _buildDetailedLegendItem(
-                                const Color(0xFF6366F1),
-                                '🍕 Food',
-                                'RM 1,240',
-                                '35%',
-                              ),
-                              const SizedBox(height: 12),
-                              _buildDetailedLegendItem(
-                                const Color(0xFF06B6D4),
-                                '🚗 Transport',
-                                'RM 780',
-                                '22%',
-                              ),
-                              const SizedBox(height: 12),
-                              _buildDetailedLegendItem(
-                                const Color(0xFF10B981),
-                                '🛍️ Shopping',
-                                'RM 640',
-                                '18%',
-                              ),
-                              const SizedBox(height: 12),
-                              _buildDetailedLegendItem(
-                                const Color(0xFFF43F5E),
-                                '🏠 Rent',
-                                'RM 530',
-                                '15%',
-                              ),
-                              const SizedBox(height: 12),
-                              _buildDetailedLegendItem(
-                                const Color(0xFFF59E0B),
-                                '🎬 Entertainment',
-                                'RM 350',
-                                '10%',
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 32),
+                        Column(
+                          children: [
+                            _buildDetailedLegendItem(
+                              const Color(0xFF6366F1),
+                              '🍕',
+                              'Food',
+                              'RM 1,240',
+                              '35%',
+                            ),
+                            const SizedBox(height: 14),
+                            _buildDetailedLegendItem(
+                              const Color(0xFF06B6D4),
+                              '🚗',
+                              'Transport',
+                              'RM 780',
+                              '22%',
+                            ),
+                            const SizedBox(height: 14),
+                            _buildDetailedLegendItem(
+                              const Color(0xFF10B981),
+                              '🛍️',
+                              'Shopping',
+                              'RM 640',
+                              '18%',
+                            ),
+                            const SizedBox(height: 14),
+                            _buildDetailedLegendItem(
+                              const Color(0xFFF43F5E),
+                              '🏠',
+                              'Rent',
+                              'RM 530',
+                              '15%',
+                            ),
+                            const SizedBox(height: 14),
+                            _buildDetailedLegendItem(
+                              const Color(0xFFF59E0B),
+                              '🎬',
+                              'Entertainment',
+                              'RM 350',
+                              '10%',
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -695,6 +700,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildDetailedLegendItem(
     Color color,
+    String emoji,
     String name,
     String amount,
     String percentage,
@@ -710,6 +716,13 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
         ),
         const SizedBox(width: 12),
+        SizedBox(
+          width: 24,
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
         Expanded(
           child: Text(
             name,
@@ -718,24 +731,30 @@ class _StatsScreenState extends State<StatsScreen> {
               color: Color(0xFF374151),
               fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              amount,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
-              ),
+        Text(
+          percentage,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+        const SizedBox(width: 16),
+        SizedBox(
+          width: 75,
+          child: Text(
+            amount,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
             ),
-            Text(
-              percentage,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-          ],
+          ),
         ),
       ],
     );
