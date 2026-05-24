@@ -4,9 +4,37 @@ import 'help_support_screen.dart';
 import 'login_screen.dart';
 import 'payment_methods_screen.dart';
 import 'security_privacy_screen.dart';
+import '../services/account_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserProfile? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final profile = await AccountService.instance.getProfile();
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +67,24 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 54,
-                    color: Color(0xFF4F46E5),
-                  ),
+                  child: _profile?.avatarUrl != null && _profile!.avatarUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(32),
+                          child: Image.network(
+                            _profile!.avatarUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.person,
+                              size: 54,
+                              color: Color(0xFF4F46E5),
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.person,
+                          size: 54,
+                          color: Color(0xFF4F46E5),
+                        ),
                 ),
                 Container(
                   width: 34,
@@ -69,24 +110,40 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Wan Hafizuddin',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
-                letterSpacing: -0.5,
+            if (_isLoading && _profile == null)
+              const SizedBox(
+                height: 48,
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF4F46E5),
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              Text(
+                _profile?.fullName ?? 'No Name',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'hafiz@glowcare.com',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF6B7280),
+              const SizedBox(height: 4),
+              Text(
+                _profile?.email ?? 'noemail@example.com',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF6B7280),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 40),
 
             // Menu Items
@@ -95,11 +152,12 @@ class ProfileScreen extends StatelessWidget {
               label: 'Account Settings',
               iconBgColor: const Color(0xFFEEF2FF),
               iconColor: const Color(0xFF4F46E5),
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
                 );
+                _loadProfile();
               },
             ),
             const SizedBox(height: 14),
