@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/auth_provider.dart';
 import 'login_screen.dart';
-import 'main_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -28,26 +29,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => const MainScreen()),
-      (route) => false,
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.signUp(
+      _emailController.text.trim(),
+      _passwordController.text,
+      _nameController.text.trim(),
     );
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.error ?? 'Registration failed'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final loading = context.watch<AuthProvider>().loading;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Create account',
           style: TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+              color: Color(0xFF111827),
+              fontSize: 18,
+              fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -66,11 +78,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 'Join PocketHero to track goals, earn rewards, and stay on budget.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                  height: 1.4,
-                ),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                    height: 1.4),
               ),
               const SizedBox(height: 32),
               _LabeledField(
@@ -81,13 +92,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textCapitalization: TextCapitalization.words,
                   autofillHints: const [AutofillHints.name],
                   decoration: _inputDecoration(
-                    hint: 'Your name',
-                    icon: Icons.person_outline,
-                  ),
+                      hint: 'Your name', icon: Icons.person_outline),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'Enter your name';
-                    }
+                    if (v == null || v.trim().isEmpty) return 'Enter your name';
                     return null;
                   },
                 ),
@@ -101,16 +108,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.email],
                   decoration: _inputDecoration(
-                    hint: 'you@example.com',
-                    icon: Icons.email_outlined,
-                  ),
+                      hint: 'you@example.com', icon: Icons.email_outlined),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'Enter your email';
-                    }
-                    if (!v.contains('@')) {
-                      return 'Enter a valid email';
-                    }
+                    if (v == null || v.trim().isEmpty) return 'Enter your email';
+                    if (!v.contains('@')) return 'Enter a valid email';
                     return null;
                   },
                 ),
@@ -134,20 +135,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             : Icons.visibility_off_outlined,
                         color: const Color(0xFF94A3B8),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Choose a password';
-                    }
-                    if (v.length < 6) {
-                      return 'At least 6 characters';
-                    }
+                    if (v == null || v.isEmpty) return 'Choose a password';
+                    if (v.length < 6) return 'At least 6 characters';
                     return null;
                   },
                 ),
@@ -172,17 +166,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             : Icons.visibility_off_outlined,
                         color: const Color(0xFF94A3B8),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirm = !_obscureConfirm;
-                        });
-                      },
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Confirm your password';
-                    }
+                    if (v == null || v.isEmpty) return 'Confirm your password';
                     if (v != _passwordController.text) {
                       return 'Passwords do not match';
                     }
@@ -194,22 +183,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _submit,
+                  onPressed: loading ? null : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4F46E5),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                        borderRadius: BorderRadius.circular(24)),
                   ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: loading
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : const Text('Register',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -219,25 +210,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     'Already have an account? ',
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
+                    onPressed: () => Navigator.of(context).pushReplacement(
                         MaterialPageRoute<void>(
-                          builder: (_) => const LoginScreen(),
-                        ),
-                      );
-                    },
+                            builder: (_) => const LoginScreen())),
                     child: const Text(
                       'Sign in',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF4F46E5),
-                      ),
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4F46E5)),
                     ),
                   ),
                 ],
@@ -249,26 +234,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  static InputDecoration _inputDecoration({
-    required String hint,
-    required IconData icon,
-  }) {
+  static InputDecoration _inputDecoration(
+      {required String hint, required IconData icon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w500),
+      hintStyle:
+          TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w500),
       prefixIcon: Icon(icon, color: const Color(0xFF94A3B8)),
       border: InputBorder.none,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 }
 
 class _LabeledField extends StatelessWidget {
-  const _LabeledField({
-    required this.label,
-    required this.child,
-  });
-
+  const _LabeledField({required this.label, required this.child});
   final String label;
   final Widget child;
 
@@ -277,14 +258,11 @@ class _LabeledField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
-          ),
-        ),
+        Text(label,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280))),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -293,10 +271,9 @@ class _LabeledField extends StatelessWidget {
             border: Border.all(color: const Color(0xFFF1F5F9)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2))
             ],
           ),
           child: child,

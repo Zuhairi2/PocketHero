@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/budget_provider.dart';
+import '../providers/gamification_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../widgets/add_transaction_modal.dart';
 import 'dashboard_screen.dart';
 import 'gamification_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'stats_screen.dart';
-import '../widgets/add_transaction_modal.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -24,6 +28,16 @@ class _MainScreenState extends State<MainScreen> {
     const GamificationScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TransactionProvider>().load();
+      context.read<BudgetProvider>().load();
+      context.read<GamificationProvider>().load();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,50 +84,38 @@ class _MainScreenState extends State<MainScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.grid_view,
-                        label: 'Home',
-                        index: 0,
-                      ),
-                    ),
+                        child: _buildNavItem(
+                            icon: Icons.grid_view,
+                            label: 'Home',
+                            index: 0)),
                     Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.pie_chart_outline,
-                        label: 'Stats',
-                        index: 1,
-                      ),
-                    ),
+                        child: _buildNavItem(
+                            icon: Icons.pie_chart_outline,
+                            label: 'Stats',
+                            index: 1)),
                   ],
                 ),
               ),
-              // Same horizontal center as the FAB so History sits under the + button.
               SizedBox(
                 width: 72,
                 child: Center(
                   child: _buildNavItem(
-                    icon: Icons.history,
-                    label: 'History',
-                    index: 2,
-                  ),
+                      icon: Icons.history, label: 'History', index: 2),
                 ),
               ),
               Expanded(
                 child: Row(
                   children: [
                     Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.emoji_events_outlined,
-                        label: 'Rewards',
-                        index: 3,
-                      ),
-                    ),
+                        child: _buildNavItem(
+                            icon: Icons.emoji_events_outlined,
+                            label: 'Rewards',
+                            index: 3)),
                     Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.person_outline,
-                        label: 'Account',
-                        index: 4,
-                      ),
-                    ),
+                        child: _buildNavItem(
+                            icon: Icons.person_outline,
+                            label: 'Account',
+                            index: 4)),
                   ],
                 ),
               ),
@@ -127,7 +129,11 @@ class _MainScreenState extends State<MainScreen> {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (context) => const AddTransactionModal(),
+                  builder: (ctx) => AddTransactionModal(
+                    onSaved: () {
+                      // Providers are already updated by the modal
+                    },
+                  ),
                 );
               },
               child: Container(
@@ -157,21 +163,14 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
+  Widget _buildNavItem(
+      {required IconData icon, required String label, required int index}) {
     final bool isSelected = _selectedIndex == index;
     final Color color =
         isSelected ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8);
 
     return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
+      onTap: () => setState(() => _selectedIndex = index),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Padding(
@@ -187,10 +186,9 @@ class _MainScreenState extends State<MainScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),

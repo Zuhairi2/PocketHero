@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/transaction_model.dart';
+import '../providers/transaction_provider.dart';
 import '../widgets/fade_in_slide.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -12,79 +16,46 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
-  final List<String> _filters = ['All', 'Food', 'Transport', 'Rent', 'Shopping', 'Health', 'Travel'];
-
-  final List<Map<String, dynamic>> _activities = [
-    {
-      'id': '1',
-      'title': 'Grab Food',
-      'time': '2:30 PM',
-      'date': 'Today',
-      'amount': '-RM 24.50',
-      'isPositive': false,
-      'icon': Icons.fastfood,
-      'category': 'Food',
-    },
-    {
-      'id': '2',
-      'title': 'Petronas Fuel',
-      'time': '11:20 AM',
-      'date': 'Today',
-      'amount': '-RM 50.00',
-      'isPositive': false,
-      'icon': Icons.local_gas_station,
-      'category': 'Transport',
-    },
-    {
-      'id': '3',
-      'title': 'Salary Deposit',
-      'time': '9:00 AM',
-      'date': 'Yesterday',
-      'amount': '+RM 3,200.00',
-      'isPositive': true,
-      'icon': Icons.account_balance_wallet,
-      'category': 'Income',
-    },
-    {
-      'id': '4',
-      'title': 'Netflix Subscription',
-      'time': '8:00 AM',
-      'date': 'Yesterday',
-      'amount': '-RM 55.00',
-      'isPositive': false,
-      'icon': Icons.movie,
-      'category': 'Entertainment',
-    },
-    {
-      'id': '5',
-      'title': 'Grocery Store',
-      'time': '6:30 PM',
-      'date': '20 Oct',
-      'amount': '-RM 120.00',
-      'isPositive': false,
-      'icon': Icons.shopping_cart,
-      'category': 'Shopping',
-    },
-    {
-      'id': '6',
-      'title': 'Gym Membership',
-      'time': '7:00 AM',
-      'date': '20 Oct',
-      'amount': '-RM 150.00',
-      'isPositive': false,
-      'icon': Icons.fitness_center,
-      'category': 'Health',
-    },
+  final List<String> _filters = [
+    'All', 'Food', 'Shop', 'Travel', 'Health', 'Play', 'Salary', 'Other'
   ];
+
+  static const Map<String, IconData> _categoryIcons = {
+    'Food': Icons.local_cafe,
+    'Shop': Icons.shopping_bag,
+    'Travel': Icons.directions_car,
+    'Health': Icons.favorite,
+    'Play': Icons.sports_esports,
+    'Gifts': Icons.card_giftcard,
+    'Salary': Icons.work,
+    'Freelance': Icons.laptop_mac,
+    'Business': Icons.store,
+    'Investment': Icons.trending_up,
+    'Gift': Icons.card_giftcard,
+    'Other': Icons.attach_money,
+  };
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<TransactionModel> _filtered(List<TransactionModel> all) {
+    final q = _searchController.text.toLowerCase();
+    return all.where((t) {
+      final matchFilter =
+          _selectedFilter == 'All' || t.category == _selectedFilter;
+      final matchSearch =
+          q.isEmpty || t.title.toLowerCase().contains(q);
+      return matchFilter && matchSearch;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Filter logic
-    final filteredActivities = _activities.where((activity) {
-      final matchesFilter = _selectedFilter == 'All' || activity['category'] == _selectedFilter;
-      final matchesSearch = activity['title'].toString().toLowerCase().contains(_searchController.text.toLowerCase());
-      return matchesFilter && matchesSearch;
-    }).toList();
+    final txProvider = context.watch<TransactionProvider>();
+    final filtered = _filtered(txProvider.transactions);
 
     return SafeArea(
       child: Padding(
@@ -93,8 +64,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 30),
-            
-            // Header
             FadeInSlide(
               duration: const Duration(milliseconds: 400),
               slideOffset: 20,
@@ -109,8 +78,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Search Bar
             FadeInSlide(
               duration: const Duration(milliseconds: 500),
               slideOffset: 30,
@@ -122,18 +89,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4))
                   ],
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (val) => setState(() {}),
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     hintText: 'Search transactions...',
-                    hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                    hintStyle:
+                        TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                     border: InputBorder.none,
                     icon: Icon(Icons.search, color: Color(0xFF94A3B8)),
                   ),
@@ -141,8 +108,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
-            // Filters
             FadeInSlide(
               duration: const Duration(milliseconds: 600),
               slideOffset: 40,
@@ -151,28 +116,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: _filters.map((filter) {
-                    bool isSelected = _selectedFilter == filter;
+                    final isSelected = _selectedFilter == filter;
                     return Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        },
+                        onTap: () =>
+                            setState(() => _selectedFilter = filter),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
+                            color: isSelected
+                                ? const Color(0xFF4F46E5)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE2E8F0),
+                              color: isSelected
+                                  ? const Color(0xFF4F46E5)
+                                  : const Color(0xFFE2E8F0),
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF4F46E5).withOpacity(0.3),
+                                      color: const Color(0xFF4F46E5)
+                                          .withOpacity(0.3),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     )
@@ -182,10 +150,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           child: Text(
                             filter,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFF64748B),
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                              fontSize: 14,
-                            ),
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF64748B),
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                fontSize: 14),
                           ),
                         ),
                       ),
@@ -195,8 +166,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            
-            // Activities Title
             FadeInSlide(
               duration: const Duration(milliseconds: 700),
               slideOffset: 50,
@@ -206,44 +175,43 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const Text(
                     'RECENT TRANSACTIONS',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF94A3B8),
-                      letterSpacing: 1.5,
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 1.5),
                   ),
                   Text(
-                    '${filteredActivities.length} items',
+                    '${filtered.length} items',
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF64748B),
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B)),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Activities List
             Expanded(
-              child: FadeInSlide(
-                duration: const Duration(milliseconds: 800),
-                slideOffset: 60,
-                child: filteredActivities.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: filteredActivities.length,
-                      itemBuilder: (context, index) {
-                        final activity = filteredActivities[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: _buildActivityCard(activity),
-                        );
-                      },
+              child: txProvider.loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : FadeInSlide(
+                      duration: const Duration(milliseconds: 800),
+                      slideOffset: 60,
+                      child: filtered.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final tx = filtered[index];
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(bottom: 16.0),
+                                  child: _buildActivityCard(tx),
+                                );
+                              },
+                            ),
                     ),
-              ),
             ),
           ],
         ),
@@ -258,34 +226,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1F5F9),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.search_off, size: 48, color: Color(0xFF94A3B8)),
+            child: const Icon(Icons.search_off,
+                size: 48, color: Color(0xFF94A3B8)),
           ),
           const SizedBox(height: 16),
           const Text(
             'No transactions found',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
-            ),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827)),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Try adjusting your search or filters.',
-            style: TextStyle(color: Color(0xFF64748B)),
-          ),
+          const Text('Try adjusting your search or filters.',
+              style: TextStyle(color: Color(0xFF64748B))),
         ],
       ),
     );
   }
 
-  Widget _buildActivityCard(Map<String, dynamic> activity) {
+  Widget _buildActivityCard(TransactionModel tx) {
+    final icon = _categoryIcons[tx.category] ?? Icons.attach_money;
+    final dateStr = _formatDate(tx.createdAt);
+    final timeStr =
+        '${tx.createdAt.hour.toString().padLeft(2, '0')}:${tx.createdAt.minute.toString().padLeft(2, '0')}';
+
     return Dismissible(
-      key: Key(activity['id']),
+      key: Key(tx.id),
       direction: DismissDirection.endToStart,
       background: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -294,26 +265,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
           borderRadius: BorderRadius.circular(24),
         ),
         alignment: Alignment.centerRight,
-        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+        child:
+            const Icon(Icons.delete_outline, color: Colors.white, size: 28),
       ),
-      onDismissed: (direction) {
-        setState(() {
-          _activities.removeWhere((item) => item['id'] == activity['id']);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${activity['title']} deleted'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            action: SnackBarAction(
-              label: 'Undo',
-              textColor: Colors.white,
-              onPressed: () {
-                // Mock undo
-              },
+      onDismissed: (_) async {
+        await context.read<TransactionProvider>().deleteTransaction(tx.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${tx.title} deleted'),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
-          ),
-        );
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -322,78 +288,88 @@ class _HistoryScreenState extends State<HistoryScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 20,
+                offset: const Offset(0, 4))
           ],
-          border: Border.all(
-            color: const Color(0xFFF8FAFC),
-            width: 2,
-          )
+          border: const Border.fromBorderSide(
+              BorderSide(color: Color(0xFFF8FAFC), width: 2)),
         ),
         child: Row(
           children: [
-            // Icon
             Container(
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: activity['isPositive'] 
-                  ? const Color(0xFFD1FAE5) // Light green
-                  : const Color(0xFFEEF2FF), // Light indigo
+                color: tx.isIncome
+                    ? const Color(0xFFD1FAE5)
+                    : const Color(0xFFEEF2FF),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
-                activity['icon'],
+                icon,
                 size: 28,
-                color: activity['isPositive'] 
-                  ? const Color(0xFF10B981) // Green
-                  : const Color(0xFF4F46E5), // Indigo
+                color: tx.isIncome
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF4F46E5),
               ),
             ),
             const SizedBox(width: 16),
-            
-            // Title & Category
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    activity['title'],
+                    tx.title,
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
-                    ),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111827)),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${activity['date']} • ${activity['time']}',
+                    '$dateStr • $timeStr',
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF64748B),
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF64748B)),
                   ),
                 ],
               ),
             ),
-            
-            // Amount
             Text(
-              activity['amount'],
+              tx.isIncome
+                  ? '+RM ${tx.amount.toStringAsFixed(2)}'
+                  : '-RM ${tx.amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
-                color: activity['isPositive']
-                    ? const Color(0xFF10B981) // Green
-                    : const Color(0xFF111827), // Dark text instead of red for a cleaner look
+                color: tx.isIncome
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF111827),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime dt) {
+    final now = DateTime.now();
+    final diff = DateTime(now.year, now.month, now.day)
+        .difference(DateTime(dt.year, dt.month, dt.day))
+        .inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return '${dt.day} ${_month(dt.month)}';
+  }
+
+  String _month(int m) {
+    const months = [
+      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[m];
   }
 }
