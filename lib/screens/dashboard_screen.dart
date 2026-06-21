@@ -6,6 +6,7 @@ import '../models/transaction_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/budget_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../widgets/add_transaction_modal.dart';
 import '../widgets/fade_in_slide.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -261,6 +262,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showAddTransactionModal({bool isExpense = true}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: AddTransactionModal(
+          initialIsExpense: isExpense,
+          onSaved: () => context.read<TransactionProvider>().load(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionRow() {
     return Row(
       children: [
@@ -269,7 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: 'Add Income',
             icon: Icons.add_circle_rounded,
             color: const Color(0xFF10B981),
-            onTap: () {},
+            onTap: () => _showAddTransactionModal(isExpense: false),
           ),
         ),
         const SizedBox(width: 10),
@@ -278,7 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             title: 'Add Expense',
             icon: Icons.remove_circle_rounded,
             color: const Color(0xFFF43F5E),
-            onTap: () {},
+            onTap: () => _showAddTransactionModal(isExpense: true),
           ),
         ),
         const SizedBox(width: 10),

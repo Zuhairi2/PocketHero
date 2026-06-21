@@ -4,18 +4,25 @@ import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 
 class AddTransactionModal extends StatefulWidget {
-  const AddTransactionModal({Key? key, this.onSaved}) : super(key: key);
+  const AddTransactionModal({Key? key, this.onSaved, this.initialIsExpense = true}) : super(key: key);
 
   final VoidCallback? onSaved;
+  final bool initialIsExpense;
 
   @override
   State<AddTransactionModal> createState() => _AddTransactionModalState();
 }
 
 class _AddTransactionModalState extends State<AddTransactionModal> {
-  bool _isExpense = true;
-  String _selectedCategory = 'Food';
+  late bool _isExpense = widget.initialIsExpense;
+  late String _selectedCategory;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategory = widget.initialIsExpense ? 'Food' : 'Salary';
+  }
 
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
