@@ -48,6 +48,7 @@ class BudgetService {
     required double targetAmount,
     DateTime? deadline,
   }) async {
+    if (_uid == null) throw Exception('Not authenticated');
     final row = await _client
         .from('savings_goals')
         .insert({

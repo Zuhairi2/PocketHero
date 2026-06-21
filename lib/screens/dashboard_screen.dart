@@ -347,10 +347,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final name = nameCtrl.text.trim();
               final amount = double.tryParse(amountCtrl.text);
               if (name.isEmpty || amount == null || amount <= 0) return;
-              await context
-                  .read<BudgetProvider>()
-                  .createGoal(name: name, targetAmount: amount);
-              if (ctx.mounted) Navigator.pop(ctx);
+              try {
+                await context
+                    .read<BudgetProvider>()
+                    .createGoal(name: name, targetAmount: amount);
+                if (ctx.mounted) Navigator.pop(ctx);
+              } catch (e) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to save goal: $e'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text('Create',
                 style: TextStyle(color: Colors.white)),

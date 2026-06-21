@@ -42,123 +42,77 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          _screens[_selectedIndex],
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(),
+      body: _screens[_selectedIndex],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddModal,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4F46E5).withOpacity(0.4),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
-        ],
+          child: const Icon(Icons.add, color: Colors.white, size: 32),
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  void _showAddModal() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const AddTransactionModal(),
     );
   }
 
   Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        border: const Border(
-          top: BorderSide(color: Color(0xFFF1F5F9), width: 1),
+    return BottomAppBar(
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8,
+      color: Colors.white,
+      elevation: 12,
+      child: SizedBox(
+        height: 64,
+        child: Row(
+          children: [
+            Expanded(
+                child: _buildNavItem(
+                    icon: Icons.grid_view, label: 'Home', index: 0)),
+            Expanded(
+                child: _buildNavItem(
+                    icon: Icons.pie_chart_outline, label: 'Stats', index: 1)),
+            // Gap for the FAB notch
+            const Expanded(child: SizedBox()),
+            Expanded(
+                child: _buildNavItem(
+                    icon: Icons.history, label: 'History', index: 2)),
+            Expanded(
+                child: _buildNavItem(
+                    icon: Icons.emoji_events_outlined,
+                    label: 'Rewards',
+                    index: 3)),
+            Expanded(
+                child: _buildNavItem(
+                    icon: Icons.person_outline, label: 'Account', index: 4)),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 40,
-            offset: const Offset(0, -10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: _buildNavItem(
-                            icon: Icons.grid_view,
-                            label: 'Home',
-                            index: 0)),
-                    Expanded(
-                        child: _buildNavItem(
-                            icon: Icons.pie_chart_outline,
-                            label: 'Stats',
-                            index: 1)),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 72,
-                child: Center(
-                  child: _buildNavItem(
-                      icon: Icons.history, label: 'History', index: 2),
-                ),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: _buildNavItem(
-                            icon: Icons.emoji_events_outlined,
-                            label: 'Rewards',
-                            index: 3)),
-                    Expanded(
-                        child: _buildNavItem(
-                            icon: Icons.person_outline,
-                            label: 'Account',
-                            index: 4)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            top: -30,
-            child: GestureDetector(
-              onTap: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (ctx) => AddTransactionModal(
-                    onSaved: () {
-                      // Providers are already updated by the modal
-                    },
-                  ),
-                );
-              },
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF4F46E5).withOpacity(0.4),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.add, color: Colors.white, size: 32),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
