@@ -68,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
           child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -83,35 +83,30 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      color: Colors.white,
-      elevation: 12,
-      child: SizedBox(
-        height: 64,
-        child: Row(
-          children: [
-            Expanded(
-                child: _buildNavItem(
-                    icon: Icons.grid_view, label: 'Home', index: 0)),
-            Expanded(
-                child: _buildNavItem(
-                    icon: Icons.pie_chart_outline, label: 'Stats', index: 1)),
-            // Gap for the FAB notch
-            const Expanded(child: SizedBox()),
-            Expanded(
-                child: _buildNavItem(
-                    icon: Icons.history, label: 'History', index: 2)),
-            Expanded(
-                child: _buildNavItem(
-                    icon: Icons.emoji_events_outlined,
-                    label: 'Rewards',
-                    index: 3)),
-            Expanded(
-                child: _buildNavItem(
-                    icon: Icons.person_outline, label: 'Account', index: 4)),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 40,
+            offset: const Offset(0, -10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
+              Expanded(child: _buildNavItem(icon: Icons.grid_view, label: 'Home', index: 0)),
+              Expanded(child: _buildNavItem(icon: Icons.pie_chart_outline, label: 'Stats', index: 1)),
+              Expanded(child: _buildNavItem(icon: Icons.history, label: 'History', index: 2)),
+              Expanded(child: _buildNavItem(icon: Icons.emoji_events_outlined, label: 'Rewards', index: 3)),
+              Expanded(child: _buildNavItem(icon: Icons.person_outline, label: 'Account', index: 4)),
+            ],
+          ),
         ),
       ),
     );

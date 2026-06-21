@@ -1,31 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 
 class AddTransactionModal extends StatefulWidget {
-  const AddTransactionModal({Key? key, this.onSaved, this.initialIsExpense = true}) : super(key: key);
+  const AddTransactionModal({
+    Key? key,
+    this.onSaved,
+    this.initialIsExpense = true,
+    this.existing,
+  }) : super(key: key);
 
   final VoidCallback? onSaved;
   final bool initialIsExpense;
+  final TransactionModel? existing;
 
   @override
   State<AddTransactionModal> createState() => _AddTransactionModalState();
 }
 
 class _AddTransactionModalState extends State<AddTransactionModal> {
-  late bool _isExpense = widget.initialIsExpense;
+  late bool _isExpense;
   late String _selectedCategory;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedCategory = widget.initialIsExpense ? 'Food' : 'Salary';
+    final e = widget.existing;
+    if (e != null) {
+      _isExpense = !e.isIncome;
+      _selectedCategory = e.category;
+    } else {
+      _isExpense = widget.initialIsExpense;
+      _selectedCategory = widget.initialIsExpense ? 'Food' : 'Salary';
+    }
   }
 
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
+  late final _titleController = TextEditingController(text: widget.existing?.title ?? '');
+  late final _amountController = TextEditingController(
+    text: widget.existing != null ? widget.existing!.amount.toStringAsFixed(2) : '',
+  );
 
   final List<Map<String, dynamic>> _expenseCategories = [
     {'icon': Icons.shopping_bag_outlined, 'label': 'Shop'},
@@ -70,14 +86,38 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       return;
     }
 
+    if (_isExpense) {
+      final provider = context.read<TransactionProvider>();
+      final currentBalance = provider.summary['balance'] ?? 0.0;
+      // When editing, add back the original amount first before checking
+      final effectiveBalance = widget.existing != null && !widget.existing!.isIncome
+          ? currentBalance + widget.existing!.amount
+          : currentBalance;
+      if (amount > effectiveBalance) {
+        _showError('Insufficient balance. You only have RM ${effectiveBalance.toStringAsFixed(2)} available.');
+        return;
+      }
+    }
+
     setState(() => _saving = true);
     try {
-      await context.read<TransactionProvider>().addTransaction(
-            title: title,
-            amount: amount,
-            category: _selectedCategory,
-            isIncome: !_isExpense,
-          );
+      final provider = context.read<TransactionProvider>();
+      if (widget.existing != null) {
+        await provider.updateTransaction(
+          id: widget.existing!.id,
+          title: title,
+          amount: amount,
+          category: _selectedCategory,
+          isIncome: !_isExpense,
+        );
+      } else {
+        await provider.addTransaction(
+          title: title,
+          amount: amount,
+          category: _selectedCategory,
+          isIncome: !_isExpense,
+        );
+      }
       if (mounted) {
         Navigator.pop(context);
         widget.onSaved?.call();
@@ -96,7 +136,6 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -104,7 +143,12 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           topRight: Radius.circular(32),
         ),
       ),
-      child: Column(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -340,7 +384,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                           color: Colors.white, strokeWidth: 2.5),
                     )
                   : Text(
-                      _isExpense ? 'Save Expense' : 'Save Income',
+                      widget.existing != null
+                          ? (_isExpense ? 'Update Expense' : 'Update Income')
+                          : (_isExpense ? 'Save Expense' : 'Save Income'),
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -348,8 +394,8 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                     ),
             ),
           ),
-          SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
         ],
+        ),
       ),
     );
   }

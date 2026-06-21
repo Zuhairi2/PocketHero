@@ -63,6 +63,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 slideOffset: 16,
                 child: _buildBalanceCard(balance, income, expense, txProvider),
               ),
+              if (monthlyLimit > 0 && budgetProgress >= 0.8) ...[
+                const SizedBox(height: 14),
+                FadeInSlide(
+                  duration: const Duration(milliseconds: 400),
+                  slideOffset: 16,
+                  child: _buildSpendingAlert(monthlyExpense, monthlyLimit, budgetProgress.toDouble()),
+                ),
+              ],
               const SizedBox(height: 18),
               FadeInSlide(
                 duration: const Duration(milliseconds: 450),
@@ -312,6 +320,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showEditBudgetDialog(double currentLimit) {
+    final ctrl = TextEditingController(
+        text: currentLimit > 0 ? currentLimit.toStringAsFixed(0) : '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Monthly Budget',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Monthly limit (RM)',
+            prefixText: 'RM ',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4F46E5)),
+            onPressed: () async {
+              final amount = double.tryParse(ctrl.text.trim());
+              if (amount == null || amount <= 0) return;
+              try {
+                await context.read<BudgetProvider>().setMonthlyBudget(amount);
+                if (ctx.mounted) Navigator.pop(ctx);
+              } catch (e) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                    content: Text('Failed to update budget: $e'),
+                    behavior: SnackBarBehavior.floating,
+                  ));
+                }
+              }
+            },
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showSetGoalDialog() {
     final nameCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
@@ -371,6 +425,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildSpendingAlert(double spent, double limit, double progress) {
+    final isOver = progress >= 1.0;
+    final bgColor = isOver ? const Color(0xFFFEE2E2) : const Color(0xFFFFF7ED);
+    final borderColor = isOver ? const Color(0xFFFCA5A5) : const Color(0xFFFDBA74);
+    final iconColor = isOver ? const Color(0xFFDC2626) : const Color(0xFFEA580C);
+    final icon = isOver ? Icons.warning_rounded : Icons.notifications_active_rounded;
+    final title = isOver ? 'Budget Exceeded!' : 'Spending Alert';
+    final pct = (progress * 100).toStringAsFixed(0);
+    final message = isOver
+        ? 'You\'ve spent RM ${spent.toStringAsFixed(2)}, exceeding your RM ${limit.toStringAsFixed(2)} limit.'
+        : 'You\'ve used $pct% of your monthly budget. Slow down!';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: iconColor,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF374151),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBudgetCard(
       double spent, double limit, double progress) {
     final remaining = limit - spent;
@@ -391,6 +504,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Color(0xFF0F172A)),
               ),
               const Spacer(),
+              GestureDetector(
+                onTap: () => _showEditBudgetDialog(limit),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.edit_outlined,
+                      size: 16, color: Color(0xFF64748B)),
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 6),

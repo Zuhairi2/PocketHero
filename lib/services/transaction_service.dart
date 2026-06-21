@@ -37,6 +37,29 @@ class TransactionService {
     return TransactionModel.fromMap(row);
   }
 
+  Future<TransactionModel> update({
+    required String id,
+    required String title,
+    required double amount,
+    required String category,
+    required bool isIncome,
+    String? note,
+  }) async {
+    final row = await _client
+        .from('transactions')
+        .update({
+          'title': title,
+          'amount': amount,
+          'category': category,
+          'is_income': isIncome,
+          'note': note,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+    return TransactionModel.fromMap(row);
+  }
+
   Future<void> delete(String id) async {
     await _client.from('transactions').delete().eq('id', id);
   }

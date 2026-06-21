@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import '../widgets/add_transaction_modal.dart';
 import '../widgets/fade_in_slide.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -34,6 +35,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     'Gift': Icons.card_giftcard,
     'Other': Icons.attach_money,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TransactionProvider>().load();
+    });
+  }
 
   @override
   void dispose() {
@@ -220,6 +229,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildEmptyState() {
+    final hasActiveFilter = _selectedFilter != 'All' || _searchController.text.isNotEmpty;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -244,7 +254,33 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(height: 8),
           const Text('Try adjusting your search or filters.',
               style: TextStyle(color: Color(0xFF64748B))),
+          if (hasActiveFilter) ...[
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () => setState(() {
+                _selectedFilter = 'All';
+                _searchController.clear();
+              }),
+              icon: const Icon(Icons.clear, size: 16),
+              label: const Text('Clear filters'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF4F46E5),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  void _openEdit(TransactionModel tx) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: AddTransactionModal(existing: tx),
       ),
     );
   }
@@ -281,7 +317,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           );
         }
       },
-      child: Container(
+      child: GestureDetector(
+        onTap: () => _openEdit(tx),
+        child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -350,6 +388,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

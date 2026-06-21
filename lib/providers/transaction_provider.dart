@@ -54,6 +54,28 @@ class TransactionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateTransaction({
+    required String id,
+    required String title,
+    required double amount,
+    required String category,
+    required bool isIncome,
+    String? note,
+  }) async {
+    final updated = await _txService.update(
+      id: id,
+      title: title,
+      amount: amount,
+      category: category,
+      isIncome: isIncome,
+      note: note,
+    );
+    final idx = _transactions.indexWhere((t) => t.id == id);
+    if (idx != -1) _transactions[idx] = updated;
+    _summary = await _txService.summary(_range);
+    notifyListeners();
+  }
+
   Future<void> deleteTransaction(String id) async {
     await _txService.delete(id);
     _transactions.removeWhere((t) => t.id == id);
