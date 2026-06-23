@@ -63,6 +63,10 @@ class BudgetService {
     return SavingsGoal.fromMap(row);
   }
 
+  Future<void> deleteGoal(String goalId) async {
+    await _client.from('savings_goals').delete().eq('id', goalId);
+  }
+
   Future<void> topUpGoal(String goalId, double amount) async {
     final row = await _client
         .from('savings_goals')

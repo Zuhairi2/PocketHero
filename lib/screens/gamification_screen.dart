@@ -246,6 +246,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Bronze Beginner',
                       subtitle: 'Start your savings journey.',
+                      xpRequired: '0 XP',
                       icon: Icons.star_border_rounded,
                       color: const Color(0xFFCD7F32),
                       isCurrent: currentRank == 'Bronze Beginner',
@@ -255,6 +256,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Silver Saver',
                       subtitle: 'Consistent saver. Access basic vouchers.',
+                      xpRequired: '200 XP',
                       icon: Icons.star_half_rounded,
                       color: const Color(0xFF94A3B8),
                       isCurrent: currentRank == 'Silver Saver',
@@ -264,6 +266,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Gold Guardian',
                       subtitle: 'Hit 3 monthly goals. Unlock premium trials.',
+                      xpRequired: '500 XP',
                       icon: Icons.star_rounded,
                       color: const Color(0xFFF59E0B),
                       isCurrent: currentRank == 'Gold Guardian',
@@ -274,6 +277,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Platinum Protector',
                       subtitle: '6-month streak. Higher cashback tiers.',
+                      xpRequired: '1,000 XP',
                       icon: Icons.diamond_outlined,
                       color: const Color(0xFF0EA5E9),
                       isCurrent: currentRank == 'Platinum Protector',
@@ -285,6 +289,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Diamond Master',
                       subtitle: '1-year streak. Exclusive partner discounts.',
+                      xpRequired: '2,000 XP',
                       icon: Icons.diamond_rounded,
                       color: const Color(0xFF8B5CF6),
                       isCurrent: currentRank == 'Diamond Master',
@@ -295,6 +300,7 @@ class GamificationScreen extends StatelessWidget {
                     _buildRankListItem(
                       title: 'Pocket Hero',
                       subtitle: 'Financial guru. Supreme rewards!',
+                      xpRequired: '5,000 XP',
                       icon: Icons.military_tech_rounded,
                       color: const Color(0xFFEF4444),
                       isCurrent: currentRank == 'Pocket Hero',
@@ -314,6 +320,7 @@ class GamificationScreen extends StatelessWidget {
   Widget _buildRankListItem({
     required String title,
     required String subtitle,
+    required String xpRequired,
     required IconData icon,
     required Color color,
     required bool isCurrent,
@@ -387,6 +394,22 @@ class GamificationScreen extends StatelessWidget {
                             ? const Color(0xFFCBD5E1)
                             : const Color(0xFF6B7280))),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: isLocked
+                  ? const Color(0xFFF1F5F9)
+                  : color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              xpRequired,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: isLocked ? const Color(0xFFCBD5E1) : color),
             ),
           ),
         ],

@@ -6,6 +6,7 @@ import '../models/transaction_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/budget_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../screens/ai_insights_screen.dart';
 import '../widgets/add_transaction_modal.dart';
 import '../widgets/fade_in_slide.dart';
 
@@ -76,6 +77,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 duration: const Duration(milliseconds: 450),
                 slideOffset: 20,
                 child: _buildActionRow(),
+              ),
+              const SizedBox(height: 18),
+              FadeInSlide(
+                duration: const Duration(milliseconds: 520),
+                slideOffset: 20,
+                child: _buildAIInsightsBanner(),
               ),
               const SizedBox(height: 18),
               FadeInSlide(
@@ -425,6 +432,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Widget _buildAIInsightsBanner() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AIInsightsScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x334F46E5),
+              blurRadius: 16,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.auto_awesome,
+                  color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Smart Tips',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'Tap to see tips based on your spending',
+                    style: TextStyle(
+                        color: Color(0xFFE0E7FF), fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSpendingAlert(double spent, double limit, double progress) {
     final isOver = progress >= 1.0;
     final bgColor = isOver ? const Color(0xFFFEE2E2) : const Color(0xFFFFF7ED);
@@ -718,12 +788,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Savings Goal',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A)),
+          Row(
+            children: [
+              const Text(
+                'Savings Goal',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A)),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => _confirmDeleteGoal(goal, budgetProvider),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEE2E2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.delete_outline_rounded,
+                      size: 16, color: Color(0xFFDC2626)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Text(
@@ -758,6 +845,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: const Icon(Icons.add_circle_outline_rounded),
               label: const Text('Top Up'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteGoal(SavingsGoal goal, BudgetProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Goal',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+            'Are you sure you want to remove "${goal.name}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await provider.deleteGoal(goal.id);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Failed to delete goal: $e'),
+                    behavior: SnackBarBehavior.floating,
+                  ));
+                }
+              }
+            },
+            child: const Text('Remove', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

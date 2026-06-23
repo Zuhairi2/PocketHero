@@ -41,6 +41,12 @@ class BudgetProvider extends ChangeNotifier {
     await load();
   }
 
+  Future<void> deleteGoal(String goalId) async {
+    await _service.deleteGoal(goalId);
+    _goals.removeWhere((g) => g.id == goalId);
+    notifyListeners();
+  }
+
   Future<void> topUpGoal(String goalId, double amount) async {
     await _service.topUpGoal(goalId, amount);
     await load();
