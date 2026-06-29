@@ -838,13 +838,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: () => _showTopUpDialog(goal, budgetProvider),
-              icon: const Icon(Icons.add_circle_outline_rounded),
-              label: const Text('Top Up'),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: goal.currentAmount > 0
+                    ? () => _showWithdrawDialog(goal, budgetProvider)
+                    : null,
+                icon: const Icon(Icons.remove_circle_outline_rounded,
+                    color: Color(0xFFEF4444)),
+                label: const Text('Withdraw',
+                    style: TextStyle(color: Color(0xFFEF4444))),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () => _showTopUpDialog(goal, budgetProvider),
+                icon: const Icon(Icons.add_circle_outline_rounded),
+                label: const Text('Top Up'),
+              ),
+            ],
           ),
         ],
       ),
@@ -894,9 +906,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: const TextStyle(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: ctrl,
-          keyboardType: TextInputType.number,
-          decoration:
-              const InputDecoration(labelText: 'Amount (RM)'),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Amount (RM)',
+            prefixText: 'RM ',
+          ),
         ),
         actions: [
           TextButton(
@@ -908,11 +922,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () async {
               final amount = double.tryParse(ctrl.text);
               if (amount == null || amount <= 0) return;
-              await provider.topUpGoal(goal.id, amount);
-              if (ctx.mounted) Navigator.pop(ctx);
+              Navigator.pop(ctx);
+              await provider.topUpGoal(goal.id, amount, goal.name);
+              if (mounted) {
+                context.read<TransactionProvider>().load();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('RM ${amount.toStringAsFixed(2)} added to ${goal.name}'),
+                  behavior: SnackBarBehavior.floating,
+                ));
+              }
             },
-            child: const Text('Add',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Add', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWithdrawDialog(SavingsGoal goal, BudgetProvider provider) {
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Withdraw — ${goal.name}',
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Available: RM ${goal.currentAmount.toStringAsFixed(2)}',
+              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Amount (RM)',
+                prefixText: 'RM ',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444)),
+            onPressed: () async {
+              final amount = double.tryParse(ctrl.text);
+              if (amount == null || amount <= 0) return;
+              if (amount > goal.currentAmount) {
+                ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
+                  content: Text('Amount exceeds saved balance'),
+                  behavior: SnackBarBehavior.floating,
+                ));
+                return;
+              }
+              Navigator.pop(ctx);
+              await provider.withdrawFromGoal(goal.id, amount, goal.name);
+              if (mounted) {
+                context.read<TransactionProvider>().load();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('RM ${amount.toStringAsFixed(2)} returned to your balance'),
+                  behavior: SnackBarBehavior.floating,
+                ));
+              }
+            },
+            child: const Text('Withdraw', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

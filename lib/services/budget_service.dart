@@ -78,4 +78,17 @@ class BudgetService {
         .from('savings_goals')
         .update({'current_amount': newAmount}).eq('id', goalId);
   }
+
+  Future<void> withdrawFromGoal(String goalId, double amount) async {
+    final row = await _client
+        .from('savings_goals')
+        .select('current_amount')
+        .eq('id', goalId)
+        .single();
+    final current = (row['current_amount'] as num).toDouble();
+    final newAmount = (current - amount).clamp(0.0, double.infinity);
+    await _client
+        .from('savings_goals')
+        .update({'current_amount': newAmount}).eq('id', goalId);
+  }
 }

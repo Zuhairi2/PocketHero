@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../models/budget_model.dart';
 import '../models/savings_goal_model.dart';
 import '../services/budget_service.dart';
+import '../services/transaction_service.dart';
 
 class BudgetProvider extends ChangeNotifier {
   final _service = BudgetService();
+  final _txService = TransactionService();
 
   BudgetModel? _budget;
   List<SavingsGoal> _goals = [];
@@ -47,8 +49,27 @@ class BudgetProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> topUpGoal(String goalId, double amount) async {
+  Future<void> topUpGoal(String goalId, double amount, String goalName) async {
     await _service.topUpGoal(goalId, amount);
+    await _txService.insert(
+      title: 'Savings: $goalName',
+      amount: amount,
+      category: 'Savings',
+      isIncome: false,
+      note: 'Top-up for savings goal',
+    );
+    await load();
+  }
+
+  Future<void> withdrawFromGoal(String goalId, double amount, String goalName) async {
+    await _service.withdrawFromGoal(goalId, amount);
+    await _txService.insert(
+      title: 'Savings Withdrawal: $goalName',
+      amount: amount,
+      category: 'Savings',
+      isIncome: true,
+      note: 'Withdrawal from savings goal',
+    );
     await load();
   }
 }
